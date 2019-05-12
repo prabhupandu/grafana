@@ -137,9 +137,9 @@ export class LokiDatasource {
   }
 
   testDatasource() {
-    return this._request('/api/prom/label')
+    return this._request('/actuator/health')
       .then(res => {
-        if (res && res.data && res.data.values && res.data.values.length > 0) {
+        if (res && res.data && res.data && res.data.status && res.data.status === 'UP') {
           return { status: 'success', message: 'Data source connected and labels found.' };
         }
         return {
