@@ -250,9 +250,10 @@ export class PanelChrome extends PureComponent<Props, State> {
         {loading === LoadingState.Loading && this.renderLoadingState()}
         <div className="panel-content">
           <PanelComponent
+            id={panel.id}
             data={data}
             timeRange={data.request ? data.request.range : this.timeSrv.timeRange()}
-            options={panel.getOptions(plugin.defaults)}
+            options={panel.getOptions()}
             width={width - theme.panelPadding * 2}
             height={innerPanelHeight}
             renderCounter={renderCounter}

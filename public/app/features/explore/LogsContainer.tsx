@@ -1,13 +1,14 @@
 import React, { PureComponent } from 'react';
 import { hot } from 'react-hot-loader';
 import { connect } from 'react-redux';
+import moment from 'moment';
 import { RawTimeRange, TimeRange, LogLevel, TimeZone, AbsoluteTimeRange } from '@grafana/ui';
 
 import { ExploreId, ExploreItemState } from 'app/types/explore';
 import { LogsModel, LogsDedupStrategy } from 'app/core/logs_model';
 import { StoreState } from 'app/types';
 
-import { toggleLogs, changeDedupStrategy } from './state/actions';
+import { toggleLogs, changeDedupStrategy, changeTime } from './state/actions';
 import Logs from './Logs';
 import Panel from './Panel';
 import { toggleLogLevelAction } from 'app/features/explore/state/actionTypes';
@@ -20,7 +21,6 @@ interface LogsContainerProps {
   logsHighlighterExpressions?: string[];
   logsResult?: LogsModel;
   dedupedResult?: LogsModel;
-  onChangeTime: (range: AbsoluteTimeRange) => void;
   onClickLabel: (key: string, value: string) => void;
   onStartScanning: () => void;
   onStopScanning: () => void;
@@ -35,9 +35,19 @@ interface LogsContainerProps {
   dedupStrategy: LogsDedupStrategy;
   hiddenLogLevels: Set<LogLevel>;
   width: number;
+  changeTime: typeof changeTime;
 }
 
 export class LogsContainer extends PureComponent<LogsContainerProps> {
+  onChangeTime = (absRange: AbsoluteTimeRange) => {
+    const { exploreId, timeZone, changeTime } = this.props;
+    const range = {
+      from: timeZone.isUtc ? moment.utc(absRange.from) : moment(absRange.from),
+      to: timeZone.isUtc ? moment.utc(absRange.to) : moment(absRange.to),
+    };
+
+    changeTime(exploreId, range);
+  };
   onClickLogsButton = () => {
     this.props.toggleLogs(this.props.exploreId, this.props.showingLogs);
   };
@@ -61,7 +71,6 @@ export class LogsContainer extends PureComponent<LogsContainerProps> {
       logsHighlighterExpressions,
       logsResult,
       dedupedResult,
-      onChangeTime,
       onClickLabel,
       onStartScanning,
       onStopScanning,
@@ -83,7 +92,7 @@ export class LogsContainer extends PureComponent<LogsContainerProps> {
           exploreId={exploreId}
           highlighterExpressions={logsHighlighterExpressions}
           loading={loading}
-          onChangeTime={onChangeTime}
+          onChangeTime={this.onChangeTime}
           onClickLabel={onClickLabel}
           onStartScanning={onStartScanning}
           onStopScanning={onStopScanning}
@@ -130,6 +139,7 @@ const mapDispatchToProps = {
   toggleLogs,
   changeDedupStrategy,
   toggleLogLevelAction,
+  changeTime,
 };
 
 export default hot(module)(
